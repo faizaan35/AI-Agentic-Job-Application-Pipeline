@@ -1,0 +1,13 @@
+Abdul Ali Hashmi
+B.Tech CSBS - Amity University
+
+Skills:
+- Python, JavaScript, React, Node.js
+- Data Science, Machine Learning
+- LangChain, LangGraph, OpenAI, Web Scraping
+- MongoDB, MySQL, Firebase
+- Git, Docker
+
+Experience:
+- Built a multi-agent AI job application system
+- Interned at Escorts Kubota on Data Science projects
