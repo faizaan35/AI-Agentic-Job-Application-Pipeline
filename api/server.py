@@ -1,9 +1,14 @@
-
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from typing import Optional
 import os
+import requests
+from pydantic import BaseModel
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from services.pipeline_service import start_job, get_job, RUNS_DIR
 
@@ -65,3 +70,41 @@ def list_runs():
         if os.path.isdir(p):
             out.append({"run_id": d, "dir": p})
     return out
+
+
+# ================================
+# NEW: GROQ CHAT ENDPOINT
+# ================================
+
+GROQ_API_KEY =os.getenv("GROQ_API_KEY")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+
+class ChatRequest(BaseModel):
+    messages: list
+
+
+@app.post("/chat")
+def chat_with_groq(data: ChatRequest):
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "llama-3.1-8b-instant",
+        "messages": data.messages,
+    }
+
+    response = requests.post(GROQ_URL, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        return JSONResponse(
+            {"error": response.text}, status_code=response.status_code
+        )
+
+    result = response.json()
+
+    return {
+        "reply": result["choices"][0]["message"]["content"]
+    }
