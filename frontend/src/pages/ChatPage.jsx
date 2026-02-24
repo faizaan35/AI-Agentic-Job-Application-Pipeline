@@ -38,7 +38,7 @@ function CodeBlock({ language, code }) {
 
     codeToHtml(code, {
       lang: safeLang,
-      theme: "one-dark-pro",
+      theme: "dark-plus",
     })
       .then(setHtml)
       .catch(() => setError(true))
@@ -51,7 +51,7 @@ function CodeBlock({ language, code }) {
   }
 
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-white/10 bg-[#1e1e2e] text-sm shadow-lg">
+    <div className="my-4 rounded-xl overflow-hidden border border-white/5 bg-[#0c1016] shadow-[0_6px_30px_rgba(0,0,0,0.6)]">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
         <span className="text-xs text-white/40 font-mono tracking-wide">
@@ -194,20 +194,20 @@ export default function ChatPage() {
               className={`flex gap-4 ${msg.role === "user" ? "justify-end" : ""}`}
             >
               {msg.role === "ai" && (
-                <Avatar>
-                  <AvatarFallback>AI</AvatarFallback>
+                <Avatar className="bg-emerald-500/10" >
+                  <AvatarFallback >AI</AvatarFallback>
                 </Avatar>
               )}
 
               <Card
-                className={`p-4 max-w-[75%] text-sm ${
+                className={`p-5 max-w-[75%] text-sm rounded-2xl transition-all duration-200 ${
                   msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                }`}
+                    ? "bg-[#0f1c18] border border-emerald-500/20 text-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                    : "bg-[#12161d] border border-white/5 text-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                  }`}
               >
                 {msg.role === "user" ? (
-                  <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  <p className="leading-relaxed whitespace-pre-wrap text-white/90">{msg.content}</p>
                 ) : (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
@@ -308,7 +308,7 @@ export default function ChatPage() {
       </ScrollArea>
 
       {/* Input */}
-      <div className="px-6 py-4 bg-background">
+      <div className="px-6 py-4 bg-transparent">
         <div className="max-w-3xl mx-auto flex gap-3">
           <Input
             placeholder="Ask follow-up..."
