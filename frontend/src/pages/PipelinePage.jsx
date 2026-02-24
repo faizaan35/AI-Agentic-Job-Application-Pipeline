@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { CheckCircle2, Circle, Loader2, Upload } from "lucide-react"
+import { CheckCircle2, Circle, Loader2, Upload, Briefcase, FileText, Sparkles } from "lucide-react"
 
 export default function PipelinePage() {
   const [file, setFile] = useState(null)
@@ -95,7 +95,7 @@ export default function PipelinePage() {
         const result = data.result
 
         setStats({
-          jobsScraped: 10, // Always 10 scraped
+          jobsScraped: 10,
           matches: result.matches?.length || 0,
           pdfs:
             (result.structured?.length || 0) * 2 +
@@ -104,10 +104,7 @@ export default function PipelinePage() {
         })
 
         setSteps(prev =>
-          prev.map(step => ({
-            ...step,
-            status: "completed",
-          }))
+          prev.map(step => ({ ...step, status: "completed" }))
         )
 
         setIsRunning(false)
@@ -125,19 +122,16 @@ export default function PipelinePage() {
     if (!isRunning) return
 
     let current = 0
-
-    const durations = [5000, 3500, 3500, 3500] // First step 5 sec
+    const durations = [5000, 3500, 3500, 3500]
 
     const advanceStep = () => {
       setSteps(prev => {
         const updated = [...prev]
-
         if (current < updated.length - 1) {
           updated[current].status = "completed"
           updated[current + 1].status = "active"
           current++
         }
-
         return updated
       })
 
@@ -147,31 +141,37 @@ export default function PipelinePage() {
     }
 
     setTimeout(advanceStep, durations[0])
-
   }, [isRunning])
 
-  return (
-    <div className="h-full flex items-center justify-center px-6">
-      <div className="w-full max-w-6xl bg-[#0e1116] border border-white/5 rounded-3xl p-10 shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+  // Progress line width based on steps
+  const completedCount = steps.filter(s => s.status === "completed").length
+  const activeCount = steps.filter(s => s.status === "active").length
+  const progressPct = ((completedCount + activeCount * 0.5) / (steps.length - 1)) * 100
 
-        {/* Header */}
+  return (
+    <div className="h-full overflow-y-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto">
+
+        {/* ── Header ─────────────────────────────────────────────────── */}
         <div className="mb-12 text-center">
-          <h1 className="text-3xl font-semibold text-white mb-2">
+          <h1 className="text-3xl font-semibold text-white mb-2 tracking-tight">
             Resume Optimization Pipeline
           </h1>
-          <p className="text-white/60">
+          <p className="text-white/40 text-sm">
             Visualize and monitor your AI-powered career workflow.
           </p>
         </div>
 
-        {/* Upload + Run */}
-        <div className="flex items-center justify-center gap-4 mb-14">
+        {/* ── Upload + Run ────────────────────────────────────────────── */}
+        <div className="flex items-center justify-center gap-3 mb-16">
 
-          <label className="flex items-center gap-2 px-5 py-3 rounded-2xl 
-                            bg-[#12161d] border border-white/10 
-                            hover:border-white/20 transition cursor-pointer">
-            <Upload className="w-4 h-4 text-white/60" />
-            <span className="text-white/70 text-sm">
+          {/* Upload button — outline style */}
+          <label className="flex items-center gap-2.5 px-5 py-3 rounded-2xl
+                            border border-white/15 hover:border-white/30
+                            bg-white/[0.03] hover:bg-white/[0.06]
+                            transition-all duration-200 cursor-pointer group">
+            <Upload className="w-4 h-4 text-white/40 group-hover:text-white/70 transition-colors" />
+            <span className="text-white/50 group-hover:text-white/80 text-sm transition-colors">
               {file ? file.name : "Upload Resume (PDF)"}
             </span>
             <input
@@ -184,80 +184,124 @@ export default function PipelinePage() {
             />
           </label>
 
+          {/* Run button */}
           <button
             onClick={runPipeline}
             disabled={isRunning}
-            className="px-6 py-3 rounded-2xl 
-                       bg-emerald-500 text-black font-medium
-                       hover:bg-emerald-400 transition-all
-                       disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl
+                       bg-emerald-500 hover:bg-emerald-400
+                       text-black font-medium text-sm
+                       shadow-[0_0_20px_rgba(16,185,129,0.25)]
+                       hover:shadow-[0_0_28px_rgba(16,185,129,0.4)]
+                       transition-all duration-200
+                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isRunning ? "Running..." : "Run Pipeline"}
+            {isRunning ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Running...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Run Pipeline
+              </>
+            )}
           </button>
 
         </div>
 
-        {/* Pipeline Flow */}
-        <div className="flex items-center justify-between relative">
+        {/* ── Pipeline Stepper ────────────────────────────────────────── */}
+        <div className="relative mb-16 px-4">
 
-          <div className="absolute top-5 left-0 right-0 h-[2px] bg-white/10 z-0" />
+          {/* Background track */}
+          <div className="absolute top-5 left-[10%] w-[80%] h-[2px] bg-white/[0.06] z-0" />
 
-          {steps.map(step => (
-            <div
-              key={step.id}
-              className="relative z-10 flex flex-col items-center w-1/5"
-            >
-              <div
-                className={`w-10 h-10 flex items-center justify-center rounded-full border ${
+          {/* Animated progress fill */}
+          <div
+            className="absolute top-5 left-[10%] h-[2px] bg-emerald-500/60 z-0 transition-all duration-700 ease-in-out"
+            style={{ width: `${Math.min(progressPct * 0.8, 80)}%` }}
+          />
+
+          <div className="flex items-start justify-between relative z-10">
+            {steps.map(step => (
+              <div key={step.id} className="flex flex-col items-center w-1/5">
+
+                {/* Circle */}
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-500 ${
+                    step.status === "completed"
+                      ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                      : step.status === "active"
+                      ? "bg-white/[0.06] border-white/30 text-white shadow-[0_0_12px_rgba(255,255,255,0.1)]"
+                      : "bg-white/[0.03] border-white/10 text-white/30"
+                  }`}
+                >
+                  {step.status === "completed" ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : step.status === "active" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Circle className="w-4 h-4" />
+                  )}
+                </div>
+
+                <h3 className={`mt-4 text-xs font-semibold text-center transition-colors duration-300 ${
                   step.status === "completed"
-                    ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
+                    ? "text-emerald-400"
                     : step.status === "active"
-                    ? "bg-[#1a1f27] border-white/20 text-white"
-                    : "bg-[#12161d] border-white/10 text-white/40"
-                }`}
-              >
-                {step.status === "completed" ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : step.status === "active" ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Circle className="w-4 h-4" />
-                )}
+                    ? "text-white"
+                    : "text-white/40"
+                }`}>
+                  {step.title}
+                </h3>
+
+                <p className="mt-1.5 text-[11px] text-white/30 text-center px-1 leading-relaxed">
+                  {step.description}
+                </p>
+
               </div>
-
-              <h3 className="mt-4 text-sm font-semibold text-white text-center">
-                {step.title}
-              </h3>
-
-              <p className="mt-2 text-xs text-white/50 text-center px-2">
-                {step.description}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-3 gap-6">
+        {/* ── Stat Cards ──────────────────────────────────────────────── */}
+        <div className="grid grid-cols-3 gap-4">
 
-          <div className="bg-[#12161d] border border-white/5 rounded-2xl p-6">
-            <p className="text-white/50 text-sm">Jobs Scraped</p>
-            <h2 className="text-2xl font-semibold text-white mt-2">
-              {stats.jobsScraped}
-            </h2>
+          <div className="relative overflow-hidden bg-white/[0.03] border border-white/[0.07]
+                          rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-white/40 text-xs uppercase tracking-wider font-medium">Jobs Scraped</p>
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Briefcase className="w-3.5 h-3.5 text-emerald-500/70" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-semibold text-white">{stats.jobsScraped}</h2>
           </div>
 
-          <div className="bg-[#12161d] border border-white/5 rounded-2xl p-6">
-            <p className="text-white/50 text-sm">Top Matches Generated</p>
-            <h2 className="text-2xl font-semibold text-white mt-2">
-              {stats.matches}
-            </h2>
+          <div className="relative overflow-hidden bg-white/[0.03] border border-white/[0.07]
+                          rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-white/40 text-xs uppercase tracking-wider font-medium">Top Matches</p>
+              <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Sparkles className="w-3.5 h-3.5 text-blue-400/70" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-semibold text-white">{stats.matches}</h2>
           </div>
 
-          <div className="bg-[#12161d] border border-white/5 rounded-2xl p-6">
-            <p className="text-white/50 text-sm">PDFs Generated</p>
-            <h2 className="text-2xl font-semibold text-white mt-2">
-              {stats.pdfs}
-            </h2>
+          <div className="relative overflow-hidden bg-white/[0.03] border border-white/[0.07]
+                          rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-white/40 text-xs uppercase tracking-wider font-medium">PDFs Generated</p>
+              <div className="w-7 h-7 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <FileText className="w-3.5 h-3.5 text-violet-400/70" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-semibold text-white">{stats.pdfs}</h2>
           </div>
 
         </div>
