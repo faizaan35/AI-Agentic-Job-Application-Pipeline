@@ -5,8 +5,8 @@ from typing import Optional
 import os
 import requests
 from pydantic import BaseModel
-import os
 from dotenv import load_dotenv
+import io
 
 load_dotenv()
 
@@ -38,16 +38,51 @@ async def run_pipeline(
     if not resume_text and not file:
         return JSONResponse({"error": "Provide resume_text or upload a file"}, status_code=400)
 
+    # 🔥 UPDATED FILE HANDLING (PDF + TXT SUPPORT)
     if file:
-        content = (await file.read()).decode("utf-8", errors="ignore")
-        resume_text = content
+        content = await file.read()
+
+        if file.filename.lower().endswith(".pdf"):
+            try:
+                from pypdf import PdfReader
+
+                reader = PdfReader(io.BytesIO(content))
+                extracted_text = ""
+
+                for page in reader.pages:
+                    extracted_text += page.extract_text() or ""
+
+                resume_text = extracted_text.strip()
+
+                if not resume_text:
+                    return JSONResponse(
+                        {"error": "Could not extract text from PDF."},
+                        status_code=400
+                    )
+
+            except Exception as e:
+                return JSONResponse(
+                    {"error": f"PDF processing failed: {str(e)}"},
+                    status_code=400
+                )
+
+        elif file.filename.lower().endswith(".txt"):
+            resume_text = content.decode("utf-8", errors="ignore")
+
+        else:
+            return JSONResponse(
+                {"error": "Unsupported file format. Upload PDF or TXT."},
+                status_code=400
+            )
 
     job_id = start_job(resume_text=resume_text, top_n=top_n, agentic=agentic)
     return {"job_id": job_id, "status": "started"}
 
+
 @app.get("/jobs/{job_id}")
 def job_status(job_id: str):
     return get_job(job_id)
+
 
 @app.get("/download")
 def download(path: str):
@@ -59,6 +94,7 @@ def download(path: str):
     if not path.startswith(base) or not os.path.exists(path):
         return JSONResponse({"error": "file not found"}, status_code=404)
     return FileResponse(path, media_type="application/pdf")
+
 
 @app.get("/runs")
 def list_runs():
@@ -73,10 +109,10 @@ def list_runs():
 
 
 # ================================
-# NEW: GROQ CHAT ENDPOINT
+# GROQ CHAT ENDPOINT
 # ================================
 
-GROQ_API_KEY =os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 

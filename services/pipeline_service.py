@@ -116,7 +116,7 @@ def n_scrape_jobs(state: PipelineState):
 
 
 def n_match(state: PipelineState):
-    return {"matches": match_resume_to_top_jobs(state["resume_text"], state["jobs"], top_n=1)}
+    return {"matches": match_resume_to_top_jobs(state["resume_text"], state["jobs"], top_n=2)}
 
 
 def n_tailor(state: PipelineState):
