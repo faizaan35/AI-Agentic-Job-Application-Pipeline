@@ -439,3 +439,100 @@ def main(items: Optional[List[Dict[str, Any]]] = None,
 
 if __name__ == "__main__":
     main()
+
+
+
+# =========================================================
+# COVER LETTER PDF
+# =========================================================
+
+from reportlab.platypus import SimpleDocTemplate
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.pagesizes import LETTER
+from reportlab.platypus import Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from datetime import datetime
+
+def format_cover_letter_pdf(name: str, job_title: str, company: str, cover_letter: str, out_dir="outputs/resumes"):
+    os.makedirs(out_dir, exist_ok=True)
+
+    filename = f"{slugify(name)}-{slugify(job_title)}-{slugify(company)}-cover-letter.pdf"
+    path = os.path.join(out_dir, filename)
+
+    doc = SimpleDocTemplate(path, pagesize=LETTER)
+    styles = getSampleStyleSheet()
+
+    story = []
+
+    header_style = ParagraphStyle(
+        "Header",
+        parent=styles["Normal"],
+        fontSize=16,
+        spaceAfter=12,
+        textColor=colors.black
+    )
+
+    body_style = ParagraphStyle(
+        "Body",
+        parent=styles["Normal"],
+        fontSize=11,
+        leading=15
+    )
+
+    story.append(Paragraph(name.upper(), header_style))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(datetime.utcnow().strftime("%B %d, %Y"), body_style))
+    story.append(Spacer(1, 20))
+    story.append(Paragraph(f"{job_title} @ {company}", body_style))
+    story.append(Spacer(1, 20))
+
+    for line in cover_letter.split("\n"):
+        story.append(Paragraph(line, body_style))
+        story.append(Spacer(1, 6))
+
+    doc.build(story)
+    return path
+
+
+# =========================================================
+# INTERVIEW PREP PDF
+# =========================================================
+
+def format_interview_pdf(name: str, job_title: str, company: str, interview_text: str, out_dir="outputs/resumes"):
+    os.makedirs(out_dir, exist_ok=True)
+
+    filename = f"{slugify(name)}-{slugify(job_title)}-{slugify(company)}-interview-prep.pdf"
+    path = os.path.join(out_dir, filename)
+
+    doc = SimpleDocTemplate(path, pagesize=LETTER)
+    styles = getSampleStyleSheet()
+
+    story = []
+
+    header_style = ParagraphStyle(
+        "Header",
+        parent=styles["Normal"],
+        fontSize=16,
+        spaceAfter=12,
+        textColor=colors.black
+    )
+
+    body_style = ParagraphStyle(
+        "Body",
+        parent=styles["Normal"],
+        fontSize=11,
+        leading=15
+    )
+
+    story.append(Paragraph(f"INTERVIEW PREPARATION", header_style))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(f"{job_title} @ {company}", body_style))
+    story.append(Spacer(1, 20))
+
+    for line in interview_text.split("\n"):
+        story.append(Paragraph(line, body_style))
+        story.append(Spacer(1, 6))
+
+    doc.build(story)
+    return path
