@@ -1229,39 +1229,6 @@ Potential extensions include:
 
 ---
 
-# 🤝 Contributing
-
-Contributions are welcome.
-
-A typical development workflow is:
-
-```bash
-git checkout -b feature/your-feature
-
-# Make your changes
-
-git add .
-
-git commit -m "Add your feature"
-
-git push origin feature/your-feature
-```
-
-Then open a Pull Request.
-
-Good areas for contribution include:
-
-* New job sources
-* Better matching algorithms
-* New AI agents
-* Improved PDF templates
-* Frontend improvements
-* Testing
-* Security improvements
-* Production infrastructure
-* Documentation
-
----
 
 # 📜 License
 
